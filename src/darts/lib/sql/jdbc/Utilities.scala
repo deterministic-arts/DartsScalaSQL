@@ -20,6 +20,12 @@ object Utilities {
         
     def notOneOf[T](seq: Iterable[T])(implicit tp: Type[T]): Fragment =
         generateOneOf(" <> ", " NOT IN ", seq)
+      
+    type Closeable = { def close(): Unit } 
+        
+    def closing[E <: Closeable, U](resource: E)(body: =>U): U = {
+        try body finally resource.close
+    }
 }
 
 
