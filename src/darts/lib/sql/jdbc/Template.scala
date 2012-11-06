@@ -1,6 +1,6 @@
 package darts.lib.sql.jdbc
 
-import java.sql.{PreparedStatement, Connection, ResultSet}
+import java.sql.{PreparedStatement, Connection, ResultSet, Statement}
 
 sealed trait Fragment {
 	
@@ -63,7 +63,7 @@ final class Template private[jdbc] (val text: String, val substitutions: Seq[Sub
     
     def executeInsert[U](connection: Connection, bindings: Resolver)(fn: (ResultSet)=>U): U = {
         
-        val stmt = connection.prepareStatement(text, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+        val stmt = connection.prepareStatement(text, Statement.RETURN_GENERATED_KEYS)
 
 		try {
 
@@ -90,7 +90,7 @@ final class Template private[jdbc] (val text: String, val substitutions: Seq[Sub
     
     def executeCommand(connection: Connection, bindings: Resolver): Int = {
 
-		val stmt = connection.prepareStatement(text, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+		val stmt = connection.prepareStatement(text, Statement.NO_GENERATED_KEYS)
 
 		try {
 
