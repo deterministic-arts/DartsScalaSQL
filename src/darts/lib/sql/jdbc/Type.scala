@@ -1,7 +1,7 @@
 package darts.lib.sql.jdbc
 
 import java.sql.{ResultSet, PreparedStatement, Types, Timestamp}
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, Instant}
 
 sealed abstract class Type[T] { outer =>
     
@@ -236,6 +236,15 @@ final object Type {
 
     	protected def fromStorage(value: Stored): Rep =
     	    new DateTime(value.getTime())
+    	
+        protected def toStorage(value: Rep): Stored =
+            new java.sql.Timestamp(value.getMillis())
+    }
+    
+    implicit final case object Instant extends TypeDecorator[Timestamp,Instant](Timestamp) {
+        
+        protected def fromStorage(value: Stored): Rep =
+    	    new Instant(value.getTime())
     	
         protected def toStorage(value: Rep): Stored =
             new java.sql.Timestamp(value.getMillis())
