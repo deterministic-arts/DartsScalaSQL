@@ -29,9 +29,32 @@ object Column {
     def apply[T](index: Int, desc: Type[T]): Column[T] = IndexedColumn(index, desc)
 }
 
+/**
+ * Typed wrapper around a JDBC result set. Right now, only
+ * forward traversal is implemented
+ */
+
 trait Cursor[+T] {
     
+    /**
+     * Advance the cursor.
+     * 
+     * @return	true, if the cursor has been moved to the next
+     * 			available record, and false, if there are no more
+     * 			records.
+     */
+    
     def next: Boolean
+    
+    /**
+     * Obtain the current record. The effect of calling this method
+     * is undefined, if the call is not preceded by a call to `next`
+     * which did return true, or if the last call to `next` did not
+     * return true.
+     * 
+     * @return	the record currently selected
+     */
+    
     def get: T
 }
 
