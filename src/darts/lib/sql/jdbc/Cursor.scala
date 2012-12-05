@@ -56,6 +56,9 @@ trait Cursor[+T] {
      */
     
     def get: T
+    
+    def toStream: Stream[T] =
+        if (!next) Stream.empty else Stream.cons(get, toStream)
 }
 
 abstract class BasicCursor[T] (private val underlying: ResultSet) extends Cursor[T] {

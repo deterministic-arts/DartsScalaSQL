@@ -26,6 +26,14 @@ object Fragment {
     implicit def fragmentFromBuilder(builder: FragmentBuilder): Fragment = builder.toFragment
 
     def constant[T](value: Option[T])(implicit tp: Type[T]): Fragment = SubstitutionFrag(Constant(value, tp))
+    
+    val empty: Fragment = LiteralFrag("")
+    
+    def mkSeparatedList(sep: Fragment, items: Fragment*): Fragment = {
+        items.foldRight(empty: Fragment) { (frag, tail) =>
+        	if (tail eq empty) frag else frag ~: sep ~: tail
+        }
+    }
 }
 
 final class Template private[jdbc] (val text: String, val substitutions: Seq[Substitution[_]]) {
