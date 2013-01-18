@@ -145,7 +145,7 @@ final class Template private[jdbc] (val text: String, val substitutions: Seq[Sub
 
     override def toString: String = 
         "Command(" + text + "," + substitutions + ")"
-    
+        
     def executeQuery[U](connection: Connection, bindings: Resolver)(fn: (ResultSet)=>U): U = {
 
 		val stmt = connection.prepareStatement(text, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)

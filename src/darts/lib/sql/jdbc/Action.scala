@@ -2,24 +2,28 @@ package darts.lib.sql.jdbc
 
 import java.sql.{Connection, ResultSet, PreparedStatement}
 
+trait ApplyableAction { self: Action =>
+    
+    def apply(bindings: Bindings)(implicit connection: Connection): Int =
+        execute(connection, bindings)
+        
+    def apply(bindings: Bindings.Binding[_]*)(implicit connection: Connection): Int = 
+        execute(connection, Bindings(bindings: _*))
+}
+
 abstract class Action {
 	
     protected def template: Template
     
-    def apply(connection: Connection): Int =
-    	template.executeCommand(connection, Bindings.Empty)
-        
-    def apply(connection: Connection, bindings: Bindings): Int =
+    protected def execute(connection: Connection, bindings: Bindings): Int =
         template.executeCommand(connection, bindings)
     
-    def apply(connection: Connection, bindings: Bindings.Binding[_]*): Int =
-        template.executeCommand(connection, Bindings(bindings: _*))
-        
     override def toString: String = 
         "Action(" + template + ")"
 }
 
-final class SimpleAction (protected override val template: Template) extends Action {
+final class SimpleAction (protected override val template: Template)
+extends Action with ApplyableAction {
     
     def this(frag: Fragment) = this(frag.toTemplate)
 }

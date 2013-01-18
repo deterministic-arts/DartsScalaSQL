@@ -109,6 +109,8 @@ object Session {
     val Characteristics = SessionCharacteristics
     val OpenMode = SessionOpenMode
     val AutoCommit = SessionAutoCommit
+    
+    implicit def sessionToConnection(session: Session): Connection = session.underlying
 }
 
 trait SessionFactory {

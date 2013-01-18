@@ -2,18 +2,22 @@ package darts.lib.sql.jdbc
 
 import java.sql.{Connection, ResultSet, PreparedStatement}
 
+
+trait ApplyableQuery[T] { self: Query[T] =>
+    
+    def apply(bindings: Bindings)(implicit connection: Connection): DeferredResult[T] =
+        execute(connection, bindings)
+        
+    def apply(bindings: Bindings.Binding[_]*)(implicit connection: Connection): DeferredResult[T] = 
+        execute(connection, Bindings(bindings: _*))
+}
+
 abstract class Query[T] {
 	
     protected def template: Template
     
-    def apply(connection: Connection): DeferredResult[T] =
-        new Results(connection, Bindings.Empty)
-    
-    def apply(connection: Connection, bindings: Bindings): DeferredResult[T] =
+    protected def execute(connection: Connection, bindings: Bindings): DeferredResult[T] =
         new Results(connection, bindings)
-    
-    def apply(connection: Connection, bindings: Bindings.Binding[_]*): DeferredResult[T] =
-        new Results(connection, Bindings(bindings: _*))
  
     protected def makeRowReader(rs: ResultSet): Cursor[T]
     
@@ -38,18 +42,21 @@ abstract class BasicQuery[T] extends Query[T] {
     }
 }
 
+trait ApplyableInsert[T] { self: Insert[T] =>
+    
+    def apply(bindings: Bindings)(implicit connection: Connection): Seq[T] =
+        execute(connection, bindings)
+        
+    def apply(bindings: Bindings.Binding[_]*)(implicit connection: Connection): Seq[T] = 
+        execute(connection, Bindings(bindings: _*))
+}
+
 abstract class Insert[T] {
 	
     protected def template: Template
     protected def readRow(rs: ResultSet): T
     
-    def apply(connection: Connection): Seq[T] =
-        apply(connection, Bindings.Empty)
-
-    def apply(connection: Connection, bindings: Bindings.Binding[_]*): Seq[T] =
-        apply(connection, Bindings(bindings: _*))
-    
-    def apply(connection: Connection, bindings: Bindings): Seq[T] =
+    protected def execute(connection: Connection, bindings: Bindings): Seq[T] =
         template.executeInsert(connection, bindings)(fetchIds) 
     
     override def toString: String = 
@@ -63,7 +70,8 @@ abstract class Insert[T] {
     }
 }
 
-final class SimpleQuery[T] (protected override val template: Template, private val reader: (ResultSet)=>T) extends BasicQuery[T] {
+final class SimpleQuery[T] (protected override val template: Template, private val reader: (ResultSet)=>T) 
+extends BasicQuery[T] with ApplyableQuery[T] {
     
     def this(frag: Fragment, reader: (ResultSet)=>T) = this(frag.toTemplate, reader)
     protected def readRow(rs: ResultSet): T = reader(rs)
@@ -75,7 +83,8 @@ object SimpleQuery {
     def apply[T](template: Fragment)(reader: (ResultSet)=>T): SimpleQuery[T] = new SimpleQuery(template.toTemplate, reader)
 }
 
-final class SimpleInsert[T] (protected override val template: Template, private val reader: (ResultSet)=>T) extends Insert[T] {
+final class SimpleInsert[T] (protected override val template: Template, private val reader: (ResultSet)=>T) 
+extends Insert[T] with ApplyableInsert[T] {
     
     def this(frag: Fragment, reader: (ResultSet)=>T) = this(frag.toTemplate, reader)
     protected def readRow(rs: ResultSet): T = reader(rs)
