@@ -8,6 +8,7 @@ sealed trait Column[T] {
     def apply(rs: ResultSet): Option[T]
     def required = new NotNullReader(this, (_: Option[T]).get)
     def forced(fn: Option[T]=>T) = new NotNullReader(this, fn) 
+    def defaultsTo(value: T) = new NotNullReader(this, (_: Option[T]).getOrElse(value))
 }
 
 final case class IndexedColumn[T] (val index: Int, val descriptor: Type[T]) extends Column[T] {
