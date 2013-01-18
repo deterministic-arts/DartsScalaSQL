@@ -14,7 +14,6 @@ package object sql {
     type Slot[T] = jdbc.Slot[T]
     type Bindings = jdbc.Bindings
     type Fragment = jdbc.Fragment
-    type FragmentBuilder = jdbc.FragmentBuilder
     type Template = jdbc.Template
     type Cursor[T] = jdbc.Cursor[T]
     type BasicCursor[T] = jdbc.BasicCursor[T]
@@ -48,4 +47,7 @@ package object sql {
     val Session = jdbc.Session
     
     val QueryUtilities = jdbc.Utilities
+    
+    def column[T](name: String)(implicit desc: Type[T]): Column[T] = Column(name, desc) 
+    def column[T](index: Int)(implicit desc: Type[T]): Column[T] = Column(index, desc)
 }
