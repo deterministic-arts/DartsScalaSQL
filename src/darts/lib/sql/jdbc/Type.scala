@@ -10,9 +10,6 @@ sealed abstract class Type[T] { outer =>
     def readValue(rs: ResultSet, name: String): Option[T]
     def readValue(rs: ResultSet, index: Int): Option[T]
     def bindValue(stmt: PreparedStatement, index: Int, value: Option[T]): Unit
-    
-    def slotName(name: String): Slot[T] =
-        Slot(name, this)
 }
 
 abstract class Primitive[T] protected[jdbc] () extends Type[T] {
