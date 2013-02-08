@@ -90,7 +90,7 @@ implements Connection {
 	}
 
 	public DatabaseMetaData getMetaData() throws SQLException {
-		return connection.getMetaData();
+		return new DelegateDatabaseMetaData<Connection>(this, connection.getMetaData());
 	}
 
 	public void setReadOnly(boolean readOnly) throws SQLException {

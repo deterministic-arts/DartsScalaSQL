@@ -78,7 +78,7 @@ object SessionCharacteristics {
 
 trait Session {
     
-    val underlying: Connection
+    def underlying: Connection
     
     def close = underlying.close
     def commit = underlying.commit
@@ -132,10 +132,21 @@ extends SessionFactory {
     protected def makeSession(cnx: Connection): Session =
         new SessionImpl(cnx)
 
-	protected class SessionImpl (val underlying: Connection)
-	extends Session {
-    	
+	protected class SessionImpl (under: Connection)
+	extends Session { self =>
+
         private val cache = registry.newCache(this)
+
+        val underlying: Connection = new delegate.DelegateConnection(under) {
+
+            override def isWrapperFor(c: Class[_]): Boolean = 
+        		c.isInstance(this) || c == classOf[Session] || connection.isWrapperFor(c)
+        		
+    		override def unwrap[T](c: Class[T]): T =
+    		    if (c.isInstance(this)) c.cast(this)
+    		    else if (c == classOf[Session]) c.cast(self)
+    		    else connection.unwrap(c)
+        }
 
         def getOrElse[T <: AnyRef](protocol: Protocol[T], fallback: =>Option[T]): Option[T] = 
             cache.getOrElse(protocol, fallback)
