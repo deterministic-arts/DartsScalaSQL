@@ -76,13 +76,7 @@ object SessionCharacteristics {
     def Default = SessionCharacteristics(SessionOpenMode.ReadWrite, SessionAutoCommit.Disabled)
 }
 
-trait Session {
-    
-    def underlying: Connection
-    
-    def close = underlying.close
-    def commit = underlying.commit
-    def rollback = underlying.rollback
+trait Session extends Connection {
     
     def apply[T <: AnyRef](protocol: Protocol[T]): T = get(protocol).get
     def apply[T <: AnyRef](protocol: Receipt[Session,T]): T = getOrElse(protocol.protocol, Some(protocol.make(this))).get
@@ -92,10 +86,10 @@ trait Session {
     def transactionally[U](fn: =>U): U = {
         try {
             val r = fn
-            underlying.commit
+            commit
             r
         } catch {
-            case err => { underlying.rollback; throw err }
+            case err => { rollback; throw err }
         }
     }
 }
@@ -109,8 +103,6 @@ object Session {
     val Characteristics = SessionCharacteristics
     val OpenMode = SessionOpenMode
     val AutoCommit = SessionAutoCommit
-    
-    implicit def sessionToConnection(session: Session): Connection = session.underlying
 }
 
 trait SessionFactory {
@@ -133,20 +125,17 @@ extends SessionFactory {
         new SessionImpl(cnx)
 
 	protected class SessionImpl (under: Connection)
-	extends Session { self =>
+	extends delegate.DelegateConnection(under) with Session { self =>
 
         private val cache = registry.newCache(this)
-
-        val underlying: Connection = new delegate.DelegateConnection(under) {
-
-            override def isWrapperFor(c: Class[_]): Boolean = 
-        		c.isInstance(this) || c == classOf[Session] || connection.isWrapperFor(c)
-        		
-    		override def unwrap[T](c: Class[T]): T =
-    		    if (c.isInstance(this)) c.cast(this)
-    		    else if (c == classOf[Session]) c.cast(self)
-    		    else connection.unwrap(c)
-        }
+        
+        override def isWrapperFor(c: Class[_]): Boolean = 
+    		c.isInstance(this) || c == classOf[Session] || connection.isWrapperFor(c)
+    		
+		override def unwrap[T](c: Class[T]): T =
+		    if (c.isInstance(this)) c.cast(this)
+		    else if (c == classOf[Session]) c.cast(self)
+		    else connection.unwrap(c)
 
         def getOrElse[T <: AnyRef](protocol: Protocol[T], fallback: =>Option[T]): Option[T] = 
             cache.getOrElse(protocol, fallback)
