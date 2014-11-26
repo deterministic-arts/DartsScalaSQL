@@ -723,4 +723,12 @@ implements DatabaseMetaData {
 	public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
 		return wrapResultSet(databaseMetaData.getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern));
 	}
+
+    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+        return wrapResultSet(databaseMetaData.getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern));
+    }
+
+    public boolean generatedKeyAlwaysReturned() throws SQLException {
+        return databaseMetaData.generatedKeyAlwaysReturned();
+    }
 }

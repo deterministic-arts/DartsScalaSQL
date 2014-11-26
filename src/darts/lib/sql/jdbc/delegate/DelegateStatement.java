@@ -190,4 +190,14 @@ implements Statement {
 	public boolean isPoolable() throws SQLException {
 		return statement.isPoolable();
 	}
+
+    public void closeOnCompletion() throws SQLException {
+        statement.closeOnCompletion();
+    }
+
+    public boolean isCloseOnCompletion() throws SQLException {
+        return statement.isCloseOnCompletion();
+    }
+
+
 }

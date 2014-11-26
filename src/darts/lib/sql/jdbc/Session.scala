@@ -89,7 +89,7 @@ trait Session extends Connection {
             commit
             r
         } catch {
-            case err => { rollback; throw err }
+            case err: Throwable => { rollback; throw err }
         }
     }
 }

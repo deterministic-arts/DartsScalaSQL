@@ -790,4 +790,12 @@ implements ResultSet {
 	public void updateNClob(String columnLabel, Reader reader) throws SQLException {
 		resultSet.updateNClob(columnLabel, reader);
 	}
+
+    public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+        return resultSet.getObject(columnIndex, type);
+    }
+
+    public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+        return resultSet.getObject(columnLabel, type);
+    }
 }
