@@ -36,6 +36,23 @@ final object Fragment {
 	
 	def listOfConstants[T](values: T*)(implicit descriptor: Type[T]): Fragment = 
 	    listOf(values.map(p => SubstitutionFrag(constant(p))): _*)
+
+    implicit final class SqlStringContextExtensions(val value: StringContext) extends AnyVal {
+
+        def sql(frags: Fragment*): Fragment = {
+
+            val strs = value.parts.toList.reverse
+            val args = frags.toList.reverse
+
+            @scala.annotation.tailrec def loop(frag: Fragment, ss: List[String], fs: List[Fragment]): Fragment = {
+                if (ss.isEmpty) frag
+                else if (fs.isEmpty) loop(ss.head ~: frag, ss.tail, fs)
+                else loop(ss.head ~: fs.head ~: frag, ss.tail, fs.tail)
+            }
+
+            loop(strs.head, strs.tail, args)
+        }
+    }
 }
 
 final case object EmptyFrag extends Fragment {
@@ -74,7 +91,7 @@ extends Substitution[T] {
         descriptor.bindValue(stmt, index, bindings(this))
     }
     
-    def bind(value: Option[T]): Bindings.Binding[T] = (this, value)
+    def bind(value: Option[T]): Bindings.Binding[T] = Bindings.Binding(this, value)
     def apply(value: T): Bindings.Binding[T] = bind(Some(value))
     lazy val empty: Bindings.Binding[T] = bind(None)
     
@@ -101,21 +118,21 @@ sealed trait Substitution[T] {
 
 final object Bindings {
     
-    type Binding[T] = Tuple2[Slot[T],Option[T]]
+    final case class Binding[T](slot: Slot[T], value: Option[T])
     
     val Empty = new Bindings(Map())
 
     def apply(pairs: Binding[_]*): Bindings =
-        if (pairs.isEmpty) Empty else new Bindings(Map(pairs: _*))
+        Empty ++ pairs
 }
 
 final class Bindings private (private val map: Map[Slot[_],Option[_]]) extends Resolver {
     
 	def +[T] (pair: Bindings.Binding[T]): Bindings =
-		new Bindings(map + pair)
+		new Bindings(map.updated(pair.slot, pair.value))
 	
 	def ++ (pairs: Seq[Bindings.Binding[_]]): Bindings =
-	    new Bindings(map ++ pairs)
+	    new Bindings(pairs.foldLeft(map)((m,p) => m.updated(p.slot, p.value)))
     
 	def -[T] (key: Slot[T]): Bindings =
 	    new Bindings(map - key)

@@ -29,12 +29,10 @@ package object sql {
     type Session = jdbc.Session
     type SessionFactory = jdbc.SessionFactory
     type DataSourceSessionFactory = jdbc.DataSourceSessionFactory
-    type Registry[F] = jdbc.Registry[F]
-    type ExplicitRegistry[F] = jdbc.ExplicitRegistry[F]
-    type Protocol[T <: AnyRef] = jdbc.Protocol[T]
-    type Receipt[F,T <: AnyRef] = jdbc.Receipt[F,T]
-    type BasicReceipt[F,T <: AnyRef] = jdbc.BasicReceipt[F,T]
-    
+    type AdapterKey[F,T <: AnyRef] = jdbc.AdapterKey[F,T]
+    type AdapterCache[F] = jdbc.AdapterCache[F]
+    type Adaptable[F] = jdbc.Adaptable[F]
+
     val Type = jdbc.Type
     val Slot = jdbc.Slot
     val Bindings = jdbc.Bindings
@@ -43,7 +41,6 @@ package object sql {
     val SimpleQuery = jdbc.SimpleQuery
     val SimpleInsert = jdbc.SimpleInsert
     val SimpleAction = jdbc.SimpleAction
-    val Protocol = jdbc.Protocol
     val Session = jdbc.Session
     
     val QueryUtilities = jdbc.Utilities

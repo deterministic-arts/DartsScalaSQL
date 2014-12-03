@@ -237,13 +237,13 @@ implements Connection {
 	public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
 		return connection.createStruct(typeName, attributes);
 	}
-
+	/*
     public void setSchema(String schema) throws SQLException {
         connection.setSchema(schema);
     }
 
     public String getSchema() throws SQLException {
-        return null;
+        return connection.getSchema();
     }
 
     public void abort(Executor executor) throws SQLException {
@@ -257,4 +257,5 @@ implements Connection {
     public int getNetworkTimeout() throws SQLException {
         return connection.getNetworkTimeout();
     }
+    */
 }

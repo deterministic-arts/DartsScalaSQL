@@ -29,14 +29,14 @@ object SessionOpenMode {
     
     final case object ReadOnly extends SessionOpenMode {
         def configure(connection: Connection): Connection = {
-            connection.setReadOnly(true)
+            if (!connection.isReadOnly) connection.setReadOnly(true)
             connection
         }
     }
 
     final case object ReadWrite extends SessionOpenMode {
         def configure(connection: Connection): Connection = {
-            connection.setReadOnly(false)
+            if (connection.isReadOnly) connection.setReadOnly(false)
             connection
         }
     }
@@ -46,14 +46,14 @@ object SessionAutoCommit {
     
     final case object Enabled extends SessionAutoCommit {
         def configure(connection: Connection): Connection = {
-            connection.setAutoCommit(true)
+            if (!connection.getAutoCommit) connection.setAutoCommit(true)
             connection
         }
     }
     
     final case object Disabled extends SessionAutoCommit {
         def configure(connection: Connection): Connection = {
-            connection.setAutoCommit(false)
+            if (connection.getAutoCommit) connection.setAutoCommit(false)
             connection
         }
     }
@@ -62,7 +62,7 @@ object SessionAutoCommit {
 final case class SessionCharacteristics (val openMode: SessionOpenMode, val autoCommit: SessionAutoCommit) {
     
 	def configure(connection: Connection): Connection =
-		openMode.configure(autoCommit.configure(connection))
+		autoCommit.configure(openMode.configure(connection))
 		
 	def + (mode: SessionOpenMode): SessionCharacteristics =
 	    SessionCharacteristics(mode, autoCommit)
@@ -76,21 +76,17 @@ object SessionCharacteristics {
     def Default = SessionCharacteristics(SessionOpenMode.ReadWrite, SessionAutoCommit.Disabled)
 }
 
-trait Session extends Connection {
-    
-    def apply[T <: AnyRef](protocol: Protocol[T]): T = get(protocol).get
-    def apply[T <: AnyRef](protocol: Receipt[Session,T]): T = getOrElse(protocol.protocol, Some(protocol.make(this))).get
-    def get[T <: AnyRef](protocol: Protocol[T]): Option[T] = getOrElse(protocol, None)
-    def getOrElse[T <: AnyRef](protocol: Protocol[T], fallback: =>Option[T]): Option[T]
-    
+trait Session extends Connection with Adaptable[Session] {
+
     def transactionally[U](fn: =>U): U = {
+        var ok: Boolean = false
         try {
             val r = fn
-            commit
+            ok = true
             r
-        } catch {
-            case err: Throwable => { rollback; throw err }
-        }
+        } finally
+            if (ok) commit()
+            else rollback()
     }
 }
 
@@ -108,37 +104,36 @@ object Session {
 trait SessionFactory {
     
 	def withSession[U](char: SessionCharacteristics)(fn: (Session)=>U): U
+    def openSession: Session
 }
 
 abstract class BasicSessionFactory 
 extends SessionFactory {
     
-    protected def registry: Registry[Session]
-    protected def openConnection: Connection 
+    protected def openConnection: Connection
     
     def withSession[U](char: SessionCharacteristics)(fn: (Session)=>U): U = {
         val cnx = openConnection
-        try fn(makeSession(char.configure(cnx))) finally cnx.close
+        try { fn(makeSession(char.configure(cnx))) } finally cnx.close
     }
-    
+
+    def openSession: Session =
+        makeSession(openConnection)
+
     protected def makeSession(cnx: Connection): Session =
         new SessionImpl(cnx)
 
 	protected class SessionImpl (under: Connection)
-	extends delegate.DelegateConnection(under) with Session { self =>
+	extends delegate.DelegateConnection(under) with Session  {
 
-        private val cache = registry.newCache(this)
+        val adapters = new AdapterCache[Session](this)
         
         override def isWrapperFor(c: Class[_]): Boolean = 
-    		c.isInstance(this) || c == classOf[Session] || connection.isWrapperFor(c)
+    		c.isInstance(this) || connection.isWrapperFor(c)
     		
 		override def unwrap[T](c: Class[T]): T =
 		    if (c.isInstance(this)) c.cast(this)
-		    else if (c == classOf[Session]) c.cast(self)
 		    else connection.unwrap(c)
-
-        def getOrElse[T <: AnyRef](protocol: Protocol[T], fallback: =>Option[T]): Option[T] = 
-            cache.getOrElse(protocol, fallback)
     }
 }
 
