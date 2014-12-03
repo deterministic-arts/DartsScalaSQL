@@ -237,7 +237,7 @@ implements Connection {
 	public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
 		return connection.createStruct(typeName, attributes);
 	}
-	/*
+
     public void setSchema(String schema) throws SQLException {
         connection.setSchema(schema);
     }
@@ -257,5 +257,4 @@ implements Connection {
     public int getNetworkTimeout() throws SQLException {
         return connection.getNetworkTimeout();
     }
-    */
 }

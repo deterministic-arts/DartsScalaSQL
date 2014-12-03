@@ -464,7 +464,7 @@ implements CallableStatement {
 	public void setNClob(String parameterName, Reader reader) throws SQLException {
 		statement.setNClob(parameterName, reader);
 	}
-/*
+
     public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
         return statement.getObject(parameterIndex, type);
     }
@@ -472,7 +472,7 @@ implements CallableStatement {
     public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
         return statement.getObject(parameterName, type);
     }
-*/
+
     public boolean wasNull() throws SQLException {
 		return statement.wasNull();
 	}
