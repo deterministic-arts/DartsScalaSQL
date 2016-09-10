@@ -1,7 +1,6 @@
 package darts.lib.sql.jdbc
 
 import java.sql.{ResultSet, PreparedStatement, Types, Timestamp}
-import org.joda.time.{DateTime, Instant}
 
 sealed abstract class Type[T] { outer =>
     
@@ -264,49 +263,40 @@ final object Type {
         protected def toStorage(value: Char): String =
             "" + value
     }
-    
-    implicit final case object DateTime extends TypeDecorator[Timestamp,DateTime](Timestamp) {
 
-    	protected def fromStorage(value: Stored): Rep =
-    	    new DateTime(value.getTime())
-    	
-        protected def toStorage(value: Rep): Stored =
-            new java.sql.Timestamp(value.getMillis())
-    }
-    
-    implicit final case object Instant extends TypeDecorator[Timestamp,Instant](Timestamp) {
+    implicit final case object Instant extends TypeDecorator[Timestamp,java.time.Instant](Timestamp) {
         
         protected def fromStorage(value: Stored): Rep =
-    	    new Instant(value.getTime())
+    	    value.toInstant()
     	
         protected def toStorage(value: Rep): Stored =
-            new java.sql.Timestamp(value.getMillis())
+            java.sql.Timestamp.from(value)
     }
 
-    implicit final case object LocalDateTime extends TypeDecorator[Timestamp,org.joda.time.LocalDateTime](Timestamp) {
+    implicit final case object LocalDate extends TypeDecorator[java.sql.Date,java.time.LocalDate](Date) {
 
         protected def fromStorage(value: Stored): Rep =
-            new org.joda.time.LocalDateTime(value.getTime())
+            value.toLocalDate()
 
         protected def toStorage(value: Rep): Stored =
-            new java.sql.Timestamp(value.toDateTime.getMillis)
+            java.sql.Date.valueOf(value)
     }
 
-    implicit final case object LocalDate extends TypeDecorator[java.sql.Date,org.joda.time.LocalDate](Date) {
+    implicit final case object LocalTime extends TypeDecorator[java.sql.Time,java.time.LocalTime](Time) {
 
         protected def fromStorage(value: Stored): Rep =
-            new org.joda.time.LocalDate(value)
+            value.toLocalTime()
 
         protected def toStorage(value: Rep): Stored =
-            new java.sql.Date(value.toDate.getTime)
+            java.sql.Time.valueOf(value)
     }
 
-    implicit final case object LocalTime extends TypeDecorator[java.sql.Time,org.joda.time.LocalTime](Time) {
+    implicit final case object LocalDateTime extends TypeDecorator[java.sql.Timestamp,java.time.LocalDateTime](Timestamp) {
 
         protected def fromStorage(value: Stored): Rep =
-            new org.joda.time.LocalTime(value.getTime)
+            value.toLocalDateTime()
 
         protected def toStorage(value: Rep): Stored =
-            new java.sql.Time(value.getMillisOfDay)
+            java.sql.Timestamp.valueOf(value)
     }
 }
