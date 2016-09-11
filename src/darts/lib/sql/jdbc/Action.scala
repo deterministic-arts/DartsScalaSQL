@@ -14,7 +14,7 @@ trait ApplyableAction {
 
 abstract class Action {
 
-    protected def template: Template
+    def template: Template
 
     protected def execute(connection: Connection, bindings: Bindings): Int =
         template.executeCommand(connection, bindings)
@@ -23,7 +23,7 @@ abstract class Action {
         "Action(" + template + ")"
 }
 
-final class SimpleAction(protected override val template: Template)
+final class SimpleAction(override val template: Template)
     extends Action with ApplyableAction {
 
     def this(frag: Fragment) = this(new Template(frag))

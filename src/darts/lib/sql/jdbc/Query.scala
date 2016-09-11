@@ -15,7 +15,7 @@ trait ApplyableQuery[T] {
 
 abstract class Query[T] {
 
-    protected def template: Template
+    def template: Template
 
     protected def execute(connection: Connection, bindings: Bindings): DeferredResult[T] =
         new Results(connection, bindings)
@@ -57,7 +57,7 @@ trait ApplyableInsert[T] {
 
 abstract class Insert[T] {
 
-    protected def template: Template
+    def template: Template
 
     protected def readRow(rs: ResultSet): T
 
@@ -75,7 +75,7 @@ abstract class Insert[T] {
     }
 }
 
-final class SimpleQuery[T](protected override val template: Template, private val reader: (ResultSet) => T)
+final class SimpleQuery[T](override val template: Template, private val reader: (ResultSet) => T)
     extends BasicQuery[T] with ApplyableQuery[T] {
 
     def this(frag: Fragment, reader: (ResultSet) => T) = this(new Template(frag), reader)
@@ -90,7 +90,7 @@ object SimpleQuery {
     def apply[T](template: Fragment)(reader: (ResultSet) => T): SimpleQuery[T] = new SimpleQuery(new Template(template), reader)
 }
 
-final class SimpleInsert[T](protected override val template: Template, private val reader: (ResultSet) => T)
+final class SimpleInsert[T](override val template: Template, private val reader: (ResultSet) => T)
     extends Insert[T] with ApplyableInsert[T] {
 
     def this(frag: Fragment, reader: (ResultSet) => T) = this(new Template(frag), reader)

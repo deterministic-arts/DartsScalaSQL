@@ -49,8 +49,8 @@ final class SqlStringContextExtensions(val value: StringContext) extends AnyVal 
 
         @loop def conc(frag: Fragment, ss: List[String], fs: List[Fragment]): Fragment = {
             if (ss.isEmpty) frag
-            else if (ss.head.isEmpty) conc(frag, ss.tail, fs)
             else if (fs.isEmpty) conc(concatenate2(TextFrag(ss.head), frag), ss.tail, fs)
+            else if (ss.head.isEmpty) conc(concatenate2(fs.head, frag), ss.tail, fs.tail)
             else conc(concatenate2(TextFrag(ss.head), concatenate2(fs.head, frag)), ss.tail, fs.tail)
         }
 
