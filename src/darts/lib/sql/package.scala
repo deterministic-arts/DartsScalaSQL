@@ -61,5 +61,6 @@ package object sql {
     def missing[T](implicit descriptor: Type[T]): Constant[T] =
         Constant(None, descriptor)
 
-    object sqlstr extends jdbc.FragmentImplicits
+    implicit def sqlstr(context: StringContext): jdbc.SqlStringContextExtensions =
+        new jdbc.SqlStringContextExtensions(context)
 }
