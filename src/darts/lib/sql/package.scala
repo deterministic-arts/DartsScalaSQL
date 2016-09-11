@@ -1,5 +1,7 @@
 package darts.lib
 
+import darts.lib.sql.jdbc.{Constant, Slot, Type}
+
 package object sql {
 
     type Connection = java.sql.Connection
@@ -44,7 +46,20 @@ package object sql {
 
     val QueryUtilities = jdbc.Utilities
 
-    def column[T](name: String)(implicit desc: Type[T]): Column[T] = Column(name, desc)
+    def column[T](name: String)(implicit desc: Type[T]): Column[T] =
+        Column(name, desc)
 
-    def column[T](index: Int)(implicit desc: Type[T]): Column[T] = Column(index, desc)
+    def column[T](index: Int)(implicit desc: Type[T]): Column[T] =
+        Column(index, desc)
+
+    def slot[T](name: String)(implicit descriptor: Type[T]): Slot[T] =
+        Slot(name, descriptor)
+
+    def constant[T](value: T)(implicit descriptor: Type[T]): Constant[T] =
+        Constant(Some(value), descriptor)
+
+    def missing[T](implicit descriptor: Type[T]): Constant[T] =
+        Constant(None, descriptor)
+
+    object sqlstr extends jdbc.FragmentImplicits
 }

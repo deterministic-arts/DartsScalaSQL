@@ -26,12 +26,12 @@ abstract class Action {
 final class SimpleAction(protected override val template: Template)
     extends Action with ApplyableAction {
 
-    def this(frag: Fragment) = this(frag.toTemplate)
+    def this(frag: Fragment) = this(new Template(frag))
 }
 
 object SimpleAction {
 
-    def apply(frag: Fragment): SimpleAction = new SimpleAction(frag.toTemplate)
+    def apply(frag: Fragment): SimpleAction = new SimpleAction(new Template(frag))
 
     def apply(frag: Template): SimpleAction = new SimpleAction(frag)
 }

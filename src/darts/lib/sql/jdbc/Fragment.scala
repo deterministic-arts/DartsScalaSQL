@@ -1,95 +1,73 @@
 package darts.lib.sql.jdbc
 
 import java.sql.PreparedStatement
+import scala.annotation.{tailrec => loop}
 
-sealed trait Fragment {
-
-    def ~:(frag: Fragment): Fragment
+trait Fragment {
 
     def isEmpty: Boolean
 
     def text: String
 
     def substitutions: Seq[Substitution[_]]
-
-    def toTemplate: Template =
-        new Template(text, substitutions)
 }
 
 final object Fragment {
 
-    def slot[T](name: String)(implicit descriptor: Type[T]): Slot[T] =
-        Slot(name, descriptor)
+    val Empty: Fragment = TextFrag("")
 
-    def constant[T](value: T)(implicit descriptor: Type[T]): Constant[T] =
-        Constant(Some(value), descriptor)
-
-    def missing[T](implicit descriptor: Type[T]): Constant[T] =
-        Constant(None, descriptor)
-
-    implicit def fragmentFromString(text: String): Fragment =
-        TextFrag(text)
-
-    implicit def fragmentFromSubstitution(subst: Substitution[_]): Fragment =
-        SubstitutionFrag(subst)
-
-    private val Comma = TextFrag(", ")
-
-    def listOf(frags: Fragment*): Fragment =
-        frags.foldRight(EmptyFrag: Fragment) { (elt, accu) => if (accu == EmptyFrag) elt else elt ~: Comma ~: accu }
-
-    def listOfConstants[T](values: T*)(implicit descriptor: Type[T]): Fragment =
-        listOf(values.map(p => SubstitutionFrag(constant(p))): _*)
-
-    implicit final class SqlStringContextExtensions(val value: StringContext) extends AnyVal {
-
-        def sql(frags: Fragment*): Fragment = {
-
-            val strs = value.parts.toList.reverse
-            val args = frags.toList.reverse
-
-            @scala.annotation.tailrec def loop(frag: Fragment, ss: List[String], fs: List[Fragment]): Fragment = {
-                if (ss.isEmpty) frag
-                else if (fs.isEmpty) loop(ss.head ~: frag, ss.tail, fs)
-                else loop(ss.head ~: fs.head ~: frag, ss.tail, fs.tail)
+    def concatenate2(frag1: Fragment, frag2: Fragment): Fragment =
+        if (frag1.isEmpty) frag2
+        else if (frag2.isEmpty) frag1
+        else frag1 match {
+            case TextFrag(tx1) => frag2 match {
+                case TextFrag(tx2) => TextFrag(tx1 + tx2)
+                case _ => SequenceFrag(List(frag1, frag2))
             }
-
-            loop(strs.head, strs.tail, args)
+            case SequenceFrag(ls1) => frag2 match {
+                case SequenceFrag(ls2) => SequenceFrag(ls1 ::: ls2)
+                case _ => SequenceFrag(ls1 ::: List(frag2))
+            }
+            case _ => frag2 match {
+                case SequenceFrag(ls2) => SequenceFrag(frag1 :: ls2)
+                case _ => SequenceFrag(List(frag1, frag2))
+            }
         }
-    }
 
+    def concatenate(frags: Fragment*): Fragment =
+        frags.foldRight(Empty)(concatenate2)
 }
 
-final case object EmptyFrag extends Fragment {
+final class SqlStringContextExtensions(val value: StringContext) extends AnyVal {
 
-    def ~:(frag: Fragment): Fragment = frag
+    import Fragment._
 
-    def isEmpty: Boolean = true
+    def sql(frags: Fragment*): Fragment = {
 
-    def text: String = ""
+        val strs = value.parts.toList.reverse
+        val args = frags.toList.reverse
 
-    def substitutions: Seq[Substitution[_]] = List()
+        @loop def conc(frag: Fragment, ss: List[String], fs: List[Fragment]): Fragment = {
+            if (ss.isEmpty) frag
+            else if (ss.head.isEmpty) conc(frag, ss.tail, fs)
+            else if (fs.isEmpty) conc(concatenate2(TextFrag(ss.head), frag), ss.tail, fs)
+            else conc(concatenate2(TextFrag(ss.head), concatenate2(fs.head, frag)), ss.tail, fs.tail)
+        }
+
+        conc(TextFrag(strs.head), strs.tail, args)
+    }
+}
+
+trait FragmentImplicits {
+
+    implicit def sqlFragmentStringContextExtensions(context: StringContext): SqlStringContextExtensions =
+        new SqlStringContextExtensions(context)
 }
 
 final case class TextFrag(val text: String) extends Fragment {
     def substitutions: Seq[Substitution[_]] = List()
 
     def isEmpty: Boolean = text.isEmpty
-
-    def ~:(frag: Fragment): Fragment = frag match {
-        case TextFrag(more) => TextFrag(more + text)
-        case _ => SequenceFrag(frag :: List(this))
-    }
-}
-
-final case class SubstitutionFrag(val substitution: Substitution[_]) extends Fragment {
-    def ~:(frag: Fragment): Fragment = SequenceFrag(frag :: List(this))
-
-    def isEmpty: Boolean = false
-
-    def text: String = "?"
-
-    def substitutions: Seq[Substitution[_]] = List(substitution)
 }
 
 final case class SequenceFrag(val fragments: List[Fragment]) extends Fragment {
@@ -98,15 +76,15 @@ final case class SequenceFrag(val fragments: List[Fragment]) extends Fragment {
     def isEmpty: Boolean = fragments.forall(_.isEmpty)
 
     def substitutions: Seq[Substitution[_]] = fragments.flatMap(_.substitutions)
-
-    def ~:(frag: Fragment): Fragment = frag match {
-        case SequenceFrag(head) => SequenceFrag(head ::: fragments)
-        case _ => SequenceFrag(frag :: fragments)
-    }
 }
 
 final case class Slot[T](val name: String, val descriptor: Type[T])
-    extends Substitution[T] {
+        extends Substitution[T]
+        with Fragment {
+
+    def isEmpty: Boolean = false
+    def text: String = "?"
+    def substitutions: Seq[Substitution[_]] = List(this)
 
     def bindParameter(stmt: PreparedStatement, index: Int, bindings: Resolver) {
         descriptor.bindValue(stmt, index, bindings(this))
@@ -122,7 +100,13 @@ final case class Slot[T](val name: String, val descriptor: Type[T])
 }
 
 final case class Constant[T](val value: Option[T], val descriptor: Type[T])
-    extends Substitution[T] {
+        extends Substitution[T]
+        with Fragment {
+
+    def isEmpty: Boolean = false
+    def text: String = "?"
+    def substitutions: Seq[Substitution[_]] = List(this)
+
     def bindParameter(stmt: PreparedStatement, index: Int, bindings: Resolver) {
         descriptor.bindValue(stmt, index, value)
     }

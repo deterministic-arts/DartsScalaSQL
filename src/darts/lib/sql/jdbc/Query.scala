@@ -78,7 +78,7 @@ abstract class Insert[T] {
 final class SimpleQuery[T](protected override val template: Template, private val reader: (ResultSet) => T)
     extends BasicQuery[T] with ApplyableQuery[T] {
 
-    def this(frag: Fragment, reader: (ResultSet) => T) = this(frag.toTemplate, reader)
+    def this(frag: Fragment, reader: (ResultSet) => T) = this(new Template(frag), reader)
 
     protected def readRow(rs: ResultSet): T = reader(rs)
 }
@@ -87,13 +87,13 @@ object SimpleQuery {
 
     def apply[T](template: Template)(reader: (ResultSet) => T): SimpleQuery[T] = new SimpleQuery(template, reader)
 
-    def apply[T](template: Fragment)(reader: (ResultSet) => T): SimpleQuery[T] = new SimpleQuery(template.toTemplate, reader)
+    def apply[T](template: Fragment)(reader: (ResultSet) => T): SimpleQuery[T] = new SimpleQuery(new Template(template), reader)
 }
 
 final class SimpleInsert[T](protected override val template: Template, private val reader: (ResultSet) => T)
     extends Insert[T] with ApplyableInsert[T] {
 
-    def this(frag: Fragment, reader: (ResultSet) => T) = this(frag.toTemplate, reader)
+    def this(frag: Fragment, reader: (ResultSet) => T) = this(new Template(frag), reader)
 
     protected def readRow(rs: ResultSet): T = reader(rs)
 }
@@ -102,5 +102,5 @@ object SimpleInsert {
 
     def apply[T](template: Template)(reader: (ResultSet) => T): SimpleInsert[T] = new SimpleInsert(template, reader)
 
-    def apply[T](template: Fragment)(reader: (ResultSet) => T): SimpleInsert[T] = new SimpleInsert(template.toTemplate, reader)
+    def apply[T](template: Fragment)(reader: (ResultSet) => T): SimpleInsert[T] = new SimpleInsert(new Template(template), reader)
 }
