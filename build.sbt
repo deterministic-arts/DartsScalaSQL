@@ -1,15 +1,12 @@
 
-import java.io.File
 import sbt._
-import Process._
-import Keys._
 
 organization := "de.deterministic-arts"  
 
-name := "DartsLibSQL"
+name := "scala-sql-library"
 
 version := "0.2"
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.8"
 
 scalaSource in Compile <<= baseDirectory (_ / "src")
