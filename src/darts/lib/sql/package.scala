@@ -1,16 +1,15 @@
 package darts.lib
 
-import javax.sql.DataSource
 package object sql {
-    
+
     type Connection = java.sql.Connection
     type ResultSet = java.sql.ResultSet
     type PreparedStatement = java.sql.PreparedStatement
     type DataSource = javax.sql.DataSource
 
     type Type[T] = jdbc.Type[T]
-    type TypeDecorator[S,T] = jdbc.TypeDecorator[S,T]
-    
+    type TypeDecorator[S, T] = jdbc.TypeDecorator[S, T]
+
     type Slot[T] = jdbc.Slot[T]
     type Bindings = jdbc.Bindings
     type Fragment = jdbc.Fragment
@@ -29,7 +28,7 @@ package object sql {
     type Session = jdbc.Session
     type SessionFactory = jdbc.SessionFactory
     type DataSourceSessionFactory = jdbc.DataSourceSessionFactory
-    type AdapterKey[F,T <: AnyRef] = jdbc.AdapterKey[F,T]
+    type AdapterKey[F, T <: AnyRef] = jdbc.AdapterKey[F, T]
     type AdapterCache[F] = jdbc.AdapterCache[F]
     type Adaptable[F] = jdbc.Adaptable[F]
 
@@ -42,9 +41,10 @@ package object sql {
     val SimpleInsert = jdbc.SimpleInsert
     val SimpleAction = jdbc.SimpleAction
     val Session = jdbc.Session
-    
+
     val QueryUtilities = jdbc.Utilities
-    
-    def column[T](name: String)(implicit desc: Type[T]): Column[T] = Column(name, desc) 
+
+    def column[T](name: String)(implicit desc: Type[T]): Column[T] = Column(name, desc)
+
     def column[T](index: Int)(implicit desc: Type[T]): Column[T] = Column(index, desc)
 }

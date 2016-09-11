@@ -1,242 +1,228 @@
 package darts.lib.sql.jdbc.delegate;
 
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.sql.Struct;
+import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
 public class DelegateConnection
-implements Connection {
-	
-	protected final Connection connection;
-	
-	public DelegateConnection(Connection c) {
-		this.connection = c;
-	}
+        implements Connection {
 
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		if (iface.isInstance(this)) return iface.cast(this);
-		return connection.unwrap(iface);
-	}
+    protected final Connection connection;
 
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		if (iface.isInstance(this)) return true;
-		return connection.isWrapperFor(iface);
-	}
-	
-	protected Statement wrapStatement(Statement stmt) {
-		return new DelegateStatement<Statement,DelegateConnection>(this, stmt);
-	}
-	
-	protected PreparedStatement wrapPreparedStatement(PreparedStatement stmt) {
-		return new DelegatePreparedStatement<PreparedStatement,DelegateConnection>(this, stmt);
-	}
-	
-	protected CallableStatement wrapCallableStatement(CallableStatement stmt) {
-		return new DelegateCallableStatement<DelegateConnection>(this, stmt);
-	}
+    public DelegateConnection(Connection c) {
+        this.connection = c;
+    }
 
-	public Statement createStatement() throws SQLException {
-		return wrapStatement(connection.createStatement());
-	}
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) return iface.cast(this);
+        return connection.unwrap(iface);
+    }
 
-	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return wrapPreparedStatement(connection.prepareStatement(sql));
-	}
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        if (iface.isInstance(this)) return true;
+        return connection.isWrapperFor(iface);
+    }
 
-	public CallableStatement prepareCall(String sql) throws SQLException {
-		return wrapCallableStatement(connection.prepareCall(sql));
-	}
+    protected Statement wrapStatement(Statement stmt) {
+        return new DelegateStatement<Statement, DelegateConnection>(this, stmt);
+    }
 
-	public String nativeSQL(String sql) throws SQLException {
-		return connection.nativeSQL(sql);
-	}
+    protected PreparedStatement wrapPreparedStatement(PreparedStatement stmt) {
+        return new DelegatePreparedStatement<PreparedStatement, DelegateConnection>(this, stmt);
+    }
 
-	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		connection.setAutoCommit(autoCommit);
-	}
+    protected CallableStatement wrapCallableStatement(CallableStatement stmt) {
+        return new DelegateCallableStatement<DelegateConnection>(this, stmt);
+    }
 
-	public boolean getAutoCommit() throws SQLException {
-		return connection.getAutoCommit();
-	}
+    public Statement createStatement() throws SQLException {
+        return wrapStatement(connection.createStatement());
+    }
 
-	public void commit() throws SQLException {
-		connection.commit();
-	}
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        return wrapPreparedStatement(connection.prepareStatement(sql));
+    }
 
-	public void rollback() throws SQLException {
-		connection.rollback();
-	}
+    public CallableStatement prepareCall(String sql) throws SQLException {
+        return wrapCallableStatement(connection.prepareCall(sql));
+    }
 
-	public void close() throws SQLException {
-		connection.close();
-	}
+    public String nativeSQL(String sql) throws SQLException {
+        return connection.nativeSQL(sql);
+    }
 
-	public boolean isClosed() throws SQLException {
-		return connection.isClosed();
-	}
+    public void setAutoCommit(boolean autoCommit) throws SQLException {
+        connection.setAutoCommit(autoCommit);
+    }
 
-	public DatabaseMetaData getMetaData() throws SQLException {
-		return new DelegateDatabaseMetaData<Connection>(this, connection.getMetaData());
-	}
+    public boolean getAutoCommit() throws SQLException {
+        return connection.getAutoCommit();
+    }
 
-	public void setReadOnly(boolean readOnly) throws SQLException {
-		connection.setReadOnly(readOnly);
-	}
+    public void commit() throws SQLException {
+        connection.commit();
+    }
 
-	public boolean isReadOnly() throws SQLException {
-		return connection.isReadOnly();
-	}
+    public void rollback() throws SQLException {
+        connection.rollback();
+    }
 
-	public void setCatalog(String catalog) throws SQLException {
-		connection.setCatalog(catalog);
-	}
+    public void close() throws SQLException {
+        connection.close();
+    }
 
-	public String getCatalog() throws SQLException {
-		return connection.getCatalog();
-	}
+    public boolean isClosed() throws SQLException {
+        return connection.isClosed();
+    }
 
-	public void setTransactionIsolation(int level) throws SQLException {
-		connection.setTransactionIsolation(level);
-	}
+    public DatabaseMetaData getMetaData() throws SQLException {
+        return new DelegateDatabaseMetaData<Connection>(this, connection.getMetaData());
+    }
 
-	public int getTransactionIsolation() throws SQLException {
-		return connection.getTransactionIsolation();
-	}
+    public void setReadOnly(boolean readOnly) throws SQLException {
+        connection.setReadOnly(readOnly);
+    }
 
-	public SQLWarning getWarnings() throws SQLException {
-		return connection.getWarnings();
-	}
+    public boolean isReadOnly() throws SQLException {
+        return connection.isReadOnly();
+    }
 
-	public void clearWarnings() throws SQLException {
-		connection.clearWarnings();
-	}
+    public void setCatalog(String catalog) throws SQLException {
+        connection.setCatalog(catalog);
+    }
 
-	public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-		return wrapStatement(connection.createStatement(resultSetType, resultSetConcurrency));
-	}
+    public String getCatalog() throws SQLException {
+        return connection.getCatalog();
+    }
 
-	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-		return wrapPreparedStatement(connection.prepareStatement(sql, resultSetType, resultSetConcurrency));
-	}
+    public void setTransactionIsolation(int level) throws SQLException {
+        connection.setTransactionIsolation(level);
+    }
 
-	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-		return wrapCallableStatement(connection.prepareCall(sql, resultSetType, resultSetConcurrency));
-	}
+    public int getTransactionIsolation() throws SQLException {
+        return connection.getTransactionIsolation();
+    }
 
-	public Map<String, Class<?>> getTypeMap() throws SQLException {
-		return connection.getTypeMap();
-	}
+    public SQLWarning getWarnings() throws SQLException {
+        return connection.getWarnings();
+    }
 
-	public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-		connection.setTypeMap(map);
-	}
+    public void clearWarnings() throws SQLException {
+        connection.clearWarnings();
+    }
 
-	public void setHoldability(int holdability) throws SQLException {
-		connection.setHoldability(holdability);
-	}
+    public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
+        return wrapStatement(connection.createStatement(resultSetType, resultSetConcurrency));
+    }
 
-	public int getHoldability() throws SQLException {
-		return connection.getHoldability();
-	}
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        return wrapPreparedStatement(connection.prepareStatement(sql, resultSetType, resultSetConcurrency));
+    }
 
-	public Savepoint setSavepoint() throws SQLException {
-		return connection.setSavepoint();
-	}
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
+        return wrapCallableStatement(connection.prepareCall(sql, resultSetType, resultSetConcurrency));
+    }
 
-	public Savepoint setSavepoint(String name) throws SQLException {
-		return connection.setSavepoint(name);
-	}
+    public Map<String, Class<?>> getTypeMap() throws SQLException {
+        return connection.getTypeMap();
+    }
 
-	public void rollback(Savepoint savepoint) throws SQLException {
-		connection.rollback(savepoint);
-	}
+    public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
+        connection.setTypeMap(map);
+    }
 
-	public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-		connection.releaseSavepoint(savepoint);
-	}
+    public void setHoldability(int holdability) throws SQLException {
+        connection.setHoldability(holdability);
+    }
 
-	public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-		return wrapStatement(connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
-	}
+    public int getHoldability() throws SQLException {
+        return connection.getHoldability();
+    }
 
-	public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-		return wrapPreparedStatement(connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
-	}
+    public Savepoint setSavepoint() throws SQLException {
+        return connection.setSavepoint();
+    }
 
-	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-		return wrapCallableStatement(connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
-	}
+    public Savepoint setSavepoint(String name) throws SQLException {
+        return connection.setSavepoint(name);
+    }
 
-	public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-		return wrapPreparedStatement(connection.prepareStatement(sql, autoGeneratedKeys));
-	}
+    public void rollback(Savepoint savepoint) throws SQLException {
+        connection.rollback(savepoint);
+    }
 
-	public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-		return wrapPreparedStatement(connection.prepareStatement(sql, columnIndexes));
-	}
+    public void releaseSavepoint(Savepoint savepoint) throws SQLException {
+        connection.releaseSavepoint(savepoint);
+    }
 
-	public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-		return wrapPreparedStatement(connection.prepareStatement(sql, columnNames));
-	}
+    public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return wrapStatement(connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability));
+    }
 
-	public Clob createClob() throws SQLException {
-		return connection.createClob();
-	}
+    public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return wrapPreparedStatement(connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
+    }
 
-	public Blob createBlob() throws SQLException {
-		return connection.createBlob();
-	}
+    public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
+        return wrapCallableStatement(connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
+    }
 
-	public NClob createNClob() throws SQLException {
-		return connection.createNClob();
-	}
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
+        return wrapPreparedStatement(connection.prepareStatement(sql, autoGeneratedKeys));
+    }
 
-	public SQLXML createSQLXML() throws SQLException {
-		return connection.createSQLXML();
-	}
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
+        return wrapPreparedStatement(connection.prepareStatement(sql, columnIndexes));
+    }
 
-	public boolean isValid(int timeout) throws SQLException {
-		return connection.isValid(timeout);
-	}
+    public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
+        return wrapPreparedStatement(connection.prepareStatement(sql, columnNames));
+    }
 
-	public void setClientInfo(String name, String value) throws SQLClientInfoException {
-		connection.setClientInfo(name, value);
-	}
+    public Clob createClob() throws SQLException {
+        return connection.createClob();
+    }
 
-	public void setClientInfo(Properties properties) throws SQLClientInfoException {
-		connection.setClientInfo(properties);
-	}
+    public Blob createBlob() throws SQLException {
+        return connection.createBlob();
+    }
 
-	public String getClientInfo(String name) throws SQLException {
-		return connection.getClientInfo(name);
-	}
+    public NClob createNClob() throws SQLException {
+        return connection.createNClob();
+    }
 
-	public Properties getClientInfo() throws SQLException {
-		return connection.getClientInfo();
-	}
+    public SQLXML createSQLXML() throws SQLException {
+        return connection.createSQLXML();
+    }
 
-	public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-		return connection.createArrayOf(typeName, elements);
-	}
+    public boolean isValid(int timeout) throws SQLException {
+        return connection.isValid(timeout);
+    }
 
-	public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-		return connection.createStruct(typeName, attributes);
-	}
+    public void setClientInfo(String name, String value) throws SQLClientInfoException {
+        connection.setClientInfo(name, value);
+    }
+
+    public void setClientInfo(Properties properties) throws SQLClientInfoException {
+        connection.setClientInfo(properties);
+    }
+
+    public String getClientInfo(String name) throws SQLException {
+        return connection.getClientInfo(name);
+    }
+
+    public Properties getClientInfo() throws SQLException {
+        return connection.getClientInfo();
+    }
+
+    public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
+        return connection.createArrayOf(typeName, elements);
+    }
+
+    public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
+        return connection.createStruct(typeName, attributes);
+    }
 
     public void setSchema(String schema) throws SQLException {
         connection.setSchema(schema);

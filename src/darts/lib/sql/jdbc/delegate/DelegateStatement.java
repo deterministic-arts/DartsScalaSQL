@@ -1,195 +1,191 @@
 package darts.lib.sql.jdbc.delegate;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
+import java.sql.*;
 
 public class DelegateStatement<S extends Statement, C extends Connection>
-implements Statement {
-	
-	protected final C connection;
-	protected final S statement;
-	
-	public DelegateStatement(C connection, S statement) {
-		this.connection = connection;
-		this.statement = statement;
-	}
-	
-	protected ResultSet wrapResultSet(ResultSet rs) {
-		return new DelegateResultSet(this, rs);
-	}
+        implements Statement {
 
-	public ResultSet executeQuery(String sql) throws SQLException {
-		return wrapResultSet(statement.executeQuery(sql));
-	}
+    protected final C connection;
+    protected final S statement;
 
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		if (iface.isInstance(this)) return iface.cast(this);
-		return statement.unwrap(iface);
-	}
+    public DelegateStatement(C connection, S statement) {
+        this.connection = connection;
+        this.statement = statement;
+    }
 
-	public int executeUpdate(String sql) throws SQLException {
-		return statement.executeUpdate(sql);
-	}
+    protected ResultSet wrapResultSet(ResultSet rs) {
+        return new DelegateResultSet(this, rs);
+    }
 
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		if (iface.isInstance(this)) return true;
-		return statement.isWrapperFor(iface);
-	}
+    public ResultSet executeQuery(String sql) throws SQLException {
+        return wrapResultSet(statement.executeQuery(sql));
+    }
 
-	public void close() throws SQLException {
-		statement.close();
-	}
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) return iface.cast(this);
+        return statement.unwrap(iface);
+    }
 
-	public int getMaxFieldSize() throws SQLException {
-		return statement.getMaxFieldSize();
-	}
+    public int executeUpdate(String sql) throws SQLException {
+        return statement.executeUpdate(sql);
+    }
 
-	public void setMaxFieldSize(int max) throws SQLException {
-		statement.setMaxFieldSize(max);
-	}
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        if (iface.isInstance(this)) return true;
+        return statement.isWrapperFor(iface);
+    }
 
-	public int getMaxRows() throws SQLException {
-		return statement.getMaxRows();
-	}
+    public void close() throws SQLException {
+        statement.close();
+    }
 
-	public void setMaxRows(int max) throws SQLException {
-		statement.setMaxRows(max);
-	}
+    public int getMaxFieldSize() throws SQLException {
+        return statement.getMaxFieldSize();
+    }
 
-	public void setEscapeProcessing(boolean enable) throws SQLException {
-		statement.setEscapeProcessing(enable);
-	}
+    public void setMaxFieldSize(int max) throws SQLException {
+        statement.setMaxFieldSize(max);
+    }
 
-	public int getQueryTimeout() throws SQLException {
-		return statement.getQueryTimeout();
-	}
+    public int getMaxRows() throws SQLException {
+        return statement.getMaxRows();
+    }
 
-	public void setQueryTimeout(int seconds) throws SQLException {
-		statement.setQueryTimeout(seconds);
-	}
+    public void setMaxRows(int max) throws SQLException {
+        statement.setMaxRows(max);
+    }
 
-	public void cancel() throws SQLException {
-		statement.cancel();
-	}
+    public void setEscapeProcessing(boolean enable) throws SQLException {
+        statement.setEscapeProcessing(enable);
+    }
 
-	public SQLWarning getWarnings() throws SQLException {
-		return statement.getWarnings();
-	}
+    public int getQueryTimeout() throws SQLException {
+        return statement.getQueryTimeout();
+    }
 
-	public void clearWarnings() throws SQLException {
-		statement.clearWarnings();
-	}
+    public void setQueryTimeout(int seconds) throws SQLException {
+        statement.setQueryTimeout(seconds);
+    }
 
-	public void setCursorName(String name) throws SQLException {
-		statement.setCursorName(name);
-	}
+    public void cancel() throws SQLException {
+        statement.cancel();
+    }
 
-	public boolean execute(String sql) throws SQLException {
-		return statement.execute(sql);
-	}
+    public SQLWarning getWarnings() throws SQLException {
+        return statement.getWarnings();
+    }
 
-	public ResultSet getResultSet() throws SQLException {
-		return wrapResultSet(statement.getResultSet());
-	}
+    public void clearWarnings() throws SQLException {
+        statement.clearWarnings();
+    }
 
-	public int getUpdateCount() throws SQLException {
-		return statement.getUpdateCount();
-	}
+    public void setCursorName(String name) throws SQLException {
+        statement.setCursorName(name);
+    }
 
-	public boolean getMoreResults() throws SQLException {
-		return statement.getMoreResults();
-	}
+    public boolean execute(String sql) throws SQLException {
+        return statement.execute(sql);
+    }
 
-	public void setFetchDirection(int direction) throws SQLException {
-		statement.setFetchDirection(direction);
-	}
+    public ResultSet getResultSet() throws SQLException {
+        return wrapResultSet(statement.getResultSet());
+    }
 
-	public int getFetchDirection() throws SQLException {
-		return statement.getFetchDirection();
-	}
+    public int getUpdateCount() throws SQLException {
+        return statement.getUpdateCount();
+    }
 
-	public void setFetchSize(int rows) throws SQLException {
-		statement.setFetchSize(rows);
-	}
+    public boolean getMoreResults() throws SQLException {
+        return statement.getMoreResults();
+    }
 
-	public int getFetchSize() throws SQLException {
-		return statement.getFetchSize();
-	}
+    public void setFetchDirection(int direction) throws SQLException {
+        statement.setFetchDirection(direction);
+    }
 
-	public int getResultSetConcurrency() throws SQLException {
-		return statement.getResultSetConcurrency();
-	}
+    public int getFetchDirection() throws SQLException {
+        return statement.getFetchDirection();
+    }
 
-	public int getResultSetType() throws SQLException {
-		return statement.getResultSetType();
-	}
+    public void setFetchSize(int rows) throws SQLException {
+        statement.setFetchSize(rows);
+    }
 
-	public void addBatch(String sql) throws SQLException {
-		statement.addBatch(sql);
-	}
+    public int getFetchSize() throws SQLException {
+        return statement.getFetchSize();
+    }
 
-	public void clearBatch() throws SQLException {
-		statement.clearBatch();
-	}
+    public int getResultSetConcurrency() throws SQLException {
+        return statement.getResultSetConcurrency();
+    }
 
-	public int[] executeBatch() throws SQLException {
-		return statement.executeBatch();
-	}
+    public int getResultSetType() throws SQLException {
+        return statement.getResultSetType();
+    }
 
-	public Connection getConnection() throws SQLException {
-		return connection;
-	}
+    public void addBatch(String sql) throws SQLException {
+        statement.addBatch(sql);
+    }
 
-	public boolean getMoreResults(int current) throws SQLException {
-		return statement.getMoreResults(current);
-	}
+    public void clearBatch() throws SQLException {
+        statement.clearBatch();
+    }
 
-	public ResultSet getGeneratedKeys() throws SQLException {
-		return wrapResultSet(statement.getGeneratedKeys());
-	}
+    public int[] executeBatch() throws SQLException {
+        return statement.executeBatch();
+    }
 
-	public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-		return statement.executeUpdate(sql, autoGeneratedKeys);
-	}
+    public Connection getConnection() throws SQLException {
+        return connection;
+    }
 
-	public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-		return statement.executeUpdate(sql, columnIndexes);
-	}
+    public boolean getMoreResults(int current) throws SQLException {
+        return statement.getMoreResults(current);
+    }
 
-	public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-		return statement.executeUpdate(sql, columnNames);
-	}
+    public ResultSet getGeneratedKeys() throws SQLException {
+        return wrapResultSet(statement.getGeneratedKeys());
+    }
 
-	public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-		return statement.execute(sql, autoGeneratedKeys);
-	}
+    public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
+        return statement.executeUpdate(sql, autoGeneratedKeys);
+    }
 
-	public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-		return statement.execute(sql, columnIndexes);
-	}
+    public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
+        return statement.executeUpdate(sql, columnIndexes);
+    }
 
-	public boolean execute(String sql, String[] columnNames) throws SQLException {
-		return statement.execute(sql, columnNames);
-	}
+    public int executeUpdate(String sql, String[] columnNames) throws SQLException {
+        return statement.executeUpdate(sql, columnNames);
+    }
 
-	public int getResultSetHoldability() throws SQLException {
-		return statement.getResultSetHoldability();
-	}
+    public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
+        return statement.execute(sql, autoGeneratedKeys);
+    }
 
-	public boolean isClosed() throws SQLException {
-		return statement.isClosed();
-	}
+    public boolean execute(String sql, int[] columnIndexes) throws SQLException {
+        return statement.execute(sql, columnIndexes);
+    }
 
-	public void setPoolable(boolean poolable) throws SQLException {
-		statement.setPoolable(poolable);
-	}
+    public boolean execute(String sql, String[] columnNames) throws SQLException {
+        return statement.execute(sql, columnNames);
+    }
 
-	public boolean isPoolable() throws SQLException {
-		return statement.isPoolable();
-	}
+    public int getResultSetHoldability() throws SQLException {
+        return statement.getResultSetHoldability();
+    }
+
+    public boolean isClosed() throws SQLException {
+        return statement.isClosed();
+    }
+
+    public void setPoolable(boolean poolable) throws SQLException {
+        statement.setPoolable(poolable);
+    }
+
+    public boolean isPoolable() throws SQLException {
+        return statement.isPoolable();
+    }
 
     public void closeOnCompletion() throws SQLException {
         statement.closeOnCompletion();
